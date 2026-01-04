@@ -10,8 +10,10 @@ using NetCord.Hosting.Gateway;
 
 using Cunt;
 
-// var builder = Host.CreateDefaultBuilder(args);
+DotEnv.LoadEnvFile("./.env");
+
 var builder = Host.CreateApplicationBuilder(args);
+
 
 builder.Services.AddHostedService<RoleEnforcer>();
 
