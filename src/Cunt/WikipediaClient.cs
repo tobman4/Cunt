@@ -6,9 +6,10 @@ namespace Cunt;
 
 record Event(int Year, string Title);
 
-class WikipediaClient(HttpClient client) {
+class WikipediaClient(HttpClient client, ILogger<WikipediaClient> logger) {
 
   private readonly HttpClient _client = client;
+  private readonly ILogger _logger = logger;
   private readonly Random _rng = new();
 
   public async Task<Event> GetTodaysEvent() {
@@ -26,10 +27,15 @@ class WikipediaClient(HttpClient client) {
 
     var todaysEvent = events.AsArray()[index];
 
-    return new(
+    var obj = new Event(
       todaysEvent?["year"]?.GetValue<int>() ?? throw new Exception("Cant get year"),
       todaysEvent?["text"]?.GetValue<string>() ?? throw new Exception("Cant get title")
     );
+
+    if(string.IsNullOrWhiteSpace(obj.Title))
+      _logger.LogWarning("God bad data date: {day}/{month} - index: {index}", day, month, index);
+      
+    return obj;
 
   }
 }

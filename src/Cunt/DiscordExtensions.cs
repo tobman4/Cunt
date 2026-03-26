@@ -1,6 +1,7 @@
 using NetCord;
 using NetCord.Gateway;
 
+using NetCord.Rest;
 
 namespace Cunt;
 
@@ -39,6 +40,15 @@ static class DiscordExtensions {
 		);
 			
 	}
+
+
+  public static async Task SendMessageAsync(this GatewayClient client, uint serverID, ulong channelID, string message) {
+    var msg = new MessageProperties {
+      Content = message
+    };
+
+    await client.Rest.SendMessageAsync(channelID, msg);
+  }
 
 
 }
