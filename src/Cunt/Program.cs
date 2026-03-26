@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 using NetCord.Hosting.Gateway;
+using NetCord.Gateway;
 
 using Cunt;
 
@@ -16,7 +17,11 @@ var builder = Host.CreateApplicationBuilder(args);
 
 
 // builder.Services.AddHostedService<RoleEnforcer>();
-builder.Services.AddDiscordGateway();
+builder.Services.AddDiscordGateway(opt => {
+  opt.Intents = GatewayIntents.GuildUsers;
+})
+.AddGatewayHandlers(typeof(Program).Assembly);
+
 
 // builder.Services.AddHostedService<TTH>();
 builder.Services.AddHttpClient<WikipediaClient>(e => {
