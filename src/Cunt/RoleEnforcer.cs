@@ -4,6 +4,7 @@ using NetCord;
 
 namespace Cunt;
 
+[Obsolete]
 class RoleEnforcer(
 	ILogger<RoleEnforcer> log,
 	IConfiguration conf,
