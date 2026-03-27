@@ -4,6 +4,7 @@ static class DotEnv {
   public static void LoadEnvFile(string path) {
     if(!File.Exists(path)) {
       Console.WriteLine($"Found no env file: {path}");
+      return;
     }
 
     var lines = File.ReadLines(path);
