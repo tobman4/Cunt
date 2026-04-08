@@ -15,6 +15,8 @@ DotEnv.LoadEnvFile("./.env");
 
 var builder = Host.CreateApplicationBuilder(args);
 
+builder.Services.AddHostedService<RoleEnforcer>();
+
 builder.Services.AddDiscordGateway(opt => {
   opt.Intents = GatewayIntents.GuildUsers;
 })

@@ -4,14 +4,13 @@ using NetCord;
 
 namespace Cunt;
 
-[Obsolete]
 class RoleEnforcer(
 	ILogger<RoleEnforcer> log,
 	IConfiguration conf,
 	GatewayClient client
 ) : BackgroundService {
 
-	private readonly PeriodicTimer _timer = new PeriodicTimer(TimeSpan.FromSeconds(15));
+	private readonly PeriodicTimer _timer = new PeriodicTimer(TimeSpan.FromHours(1));
 	private readonly GatewayClient _client = client;
 
 
