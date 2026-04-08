@@ -34,14 +34,14 @@ class RoleEnforcer(
 				try {
 					Task.WaitAll(new [] {
 						SetRole(roleID),
-						client.SetStatusOrder()
+						_client.SetStatusOrder()
 					});
 				} catch(Exception err) {
 					log.LogError(err, "Unable to set role");
 				}
 				continue;
 			} else {
-				await client.SetStatusInvestigating();
+				await _client.SetStatusInvestigating();
 			}
 
 			var g = await _client.Rest.GetGuildAsync(serverID);
