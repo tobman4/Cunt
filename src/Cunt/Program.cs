@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using NetCord.Hosting.Gateway;
 using NetCord.Gateway;
+using NetCord;
 
 using Cunt;
 using NetCord.Hosting.Services.ApplicationCommands;
@@ -43,23 +44,27 @@ app.AddSlashCommand("guess", "Guess the word of the day", (WordGame game, Applic
   if(guess.Length > 25)
     return "Bad guess: To long";
 
-  GuessResult[] result;
+  GameContext result;
   try {
-    result = game.HandleGuess(guess);
+    result = game.HandleGuess(ctx.User.Id, guess);
   } catch(ArgumentException err) {
     return $"Bad guess: {err.Message}";
   }
 
   var str = new StringBuilder();
-  foreach(var r in result) {
-    if(r == GuessResult.Correct) 
-      str.Append(":green_square:");
+  foreach(var round in result.GuessLog) {
+    foreach(var r in round) {
+      if(r == GuessResult.Correct) 
+        str.Append(":green_square:");
 
-    else if(r == GuessResult.WrongSpot)
-      str.Append(":orange_square:");
+      else if(r == GuessResult.WrongSpot)
+        str.Append(":orange_square:");
 
-    else
-      str.Append(":red_square:");
+      else
+        str.Append(":red_square:");
+    }
+
+    str.Append("\n");
   }
 
 
@@ -70,4 +75,5 @@ app.AddSlashCommand("rotate", "Set new word of the day", (WordGame game, Applica
   game.SelectNewWord();
   return "New word :o";
 });
+
 await app.RunAsync();
