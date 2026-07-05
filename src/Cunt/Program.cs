@@ -1,7 +1,5 @@
-﻿global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Configuration;
-
-
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,13 +8,19 @@ using NetCord.Hosting.Gateway;
 using NetCord.Gateway;
 
 using Cunt;
+using NetCord.Hosting.Services.ApplicationCommands;
+using Cunt.Services;
+using System.Text;
+using NetCord.Services.ApplicationCommands;
 
 DotEnv.LoadEnvFile("./.env");
 
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddHostedService<RoleEnforcer>();
+builder.Services.AddScoped<WordGame>();
 
+builder.Services.AddApplicationCommands();
 builder.Services.AddDiscordGateway(opt => {
   opt.Intents = GatewayIntents.GuildUsers;
 })
@@ -30,4 +34,33 @@ builder.Services.AddHttpClient<WikipediaClient>(e => {
 });
 
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+
+
+app.AddSlashCommand("guess", "Guess the word of the day", (WordGame game, string guess) => {
+  if(guess.Length > 25)
+    return "Bad guess: To long";
+
+  GuessResult[] result;
+  try {
+    result = game.HandleGuess(guess);
+  } catch(ArgumentException err) {
+    return $"Bad guess: {err.Message}";
+  }
+
+  var str = new StringBuilder();
+  foreach(var r in result) {
+    if(r == GuessResult.Correct) 
+      str.Append(":green_square:");
+
+    else if(r == GuessResult.WrongSpot)
+      str.Append(":orange_square:");
+
+    else
+      str.Append(":red_square:");
+  }
+
+
+  return str.ToString();
+});
+await app.RunAsync();
