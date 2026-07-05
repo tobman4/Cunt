@@ -33,14 +33,14 @@ class RoleEnforcer(
 				try {
 					Task.WaitAll(new [] {
 						SetRole(roleID),
-						_client.SetStatusOrder()
+						// _client.SetStatusOrder()
 					});
 				} catch(Exception err) {
 					log.LogError(err, "Unable to set role");
 				}
 				continue;
 			} else {
-				await _client.SetStatusInvestigating();
+				// await _client.SetStatusInvestigating();
 			}
 
 			var g = await _client.Rest.GetGuildAsync(serverID);
@@ -53,8 +53,8 @@ class RoleEnforcer(
 				}
 			}
 
-			if(_toAdd.Count() == 0) 
-				await _client.SetStatusSleep();
+			// if(_toAdd.Count() == 0) 
+				// await _client.SetStatusSleep();
 
 		} while(await _timer.WaitForNextTickAsync(st));
 	}
