@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Cunt.Interfaces;
+
 namespace Cunt.Services;
 
 enum GuessResult {
@@ -12,11 +15,13 @@ class GameContext(string user) {
   public List<GuessResult[]> _guessLog = new();
 }
 
-class WordGame {
+class WordGame(IServiceProvider services, ILogger<WordGame> logger) {
 
+  private static readonly Random _rng = new();
   private static string _secretWord = "Braum";
 
-
+  private readonly IServiceProvider _services = services;
+  private readonly ILogger _logger = logger;
 
 
   public GuessResult[] HandleGuess(string guess) {
@@ -57,4 +62,18 @@ class WordGame {
 
     return results;
   }
+
+  public void SelectNewWord() {
+
+    using var scope = _services.CreateAsyncScope();
+    var provider = scope.ServiceProvider.GetServices<IWordProvider>()
+      .First();
+
+    var words = provider.GetWords();
+    _rng.Shuffle(words);
+    
+    _secretWord = words.First();
+    _logger.LogInformation("New word: {word}", _secretWord);
+  }
+
 }

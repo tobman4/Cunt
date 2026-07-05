@@ -19,6 +19,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddHostedService<RoleEnforcer>();
 builder.Services.AddScoped<WordGame>();
+builder.Services.AddScoped<IWordProvider, WordFileProvider>();
 
 builder.Services.AddApplicationCommands();
 builder.Services.AddDiscordGateway(opt => {
@@ -62,5 +63,10 @@ app.AddSlashCommand("guess", "Guess the word of the day", (WordGame game, Applic
 
 
   return str.ToString();
+});
+
+app.AddSlashCommand("rotate", "Set new word of the day", (WordGame game, ApplicationCommandContext ctx) => {
+  game.SelectNewWord();
+  return "New word :o";
 });
 await app.RunAsync();
