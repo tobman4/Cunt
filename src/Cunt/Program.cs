@@ -37,7 +37,7 @@ builder.Services.AddHttpClient<WikipediaClient>(e => {
 var app = builder.Build();
 
 
-app.AddSlashCommand("guess", "Guess the word of the day", (WordGame game, string guess) => {
+app.AddSlashCommand("guess", "Guess the word of the day", (WordGame game, ApplicationCommandContext ctx, string guess) => {
   if(guess.Length > 25)
     return "Bad guess: To long";
 
