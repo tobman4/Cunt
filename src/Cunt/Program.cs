@@ -10,6 +10,7 @@ using NetCord.Gateway;
 using Cunt;
 using NetCord.Hosting.Services.ApplicationCommands;
 using Cunt.Services;
+using Cunt.Interfaces;
 using System.Text;
 using NetCord.Services.ApplicationCommands;
 
