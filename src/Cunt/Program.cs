@@ -8,20 +8,19 @@ using NetCord.Hosting.Gateway;
 using NetCord.Gateway;
 using NetCord;
 
+using Microsoft.FeatureManagement;
 using Cunt;
+using Cunt.WordGame;
 using NetCord.Hosting.Services.ApplicationCommands;
-using Cunt.Services;
-using Cunt.Interfaces;
-using System.Text;
-using NetCord.Services.ApplicationCommands;
 
 DotEnv.LoadEnvFile("./.env");
 
 var builder = Host.CreateApplicationBuilder(args);
 
+builder.Services.AddFeatureManagement();
+
 builder.Services.AddHostedService<RoleEnforcer>();
-builder.Services.AddScoped<WordGame>();
-builder.Services.AddScoped<IWordProvider, WordFileProvider>();
+builder.Services.AddWordGame();
 
 builder.Services.AddApplicationCommands();
 builder.Services.AddDiscordGateway(opt => {
@@ -39,41 +38,6 @@ builder.Services.AddHttpClient<WikipediaClient>(e => {
 
 var app = builder.Build();
 
-
-app.AddSlashCommand("guess", "Guess the word of the day", (WordGame game, ApplicationCommandContext ctx, string guess) => {
-  if(guess.Length > 25)
-    return "Bad guess: To long";
-
-  GameContext result;
-  try {
-    result = game.HandleGuess(ctx.User.Id, guess);
-  } catch(ArgumentException err) {
-    return $"Bad guess: {err.Message}";
-  }
-
-  var str = new StringBuilder();
-  foreach(var round in result.GuessLog) {
-    foreach(var r in round) {
-      if(r == GuessResult.Correct) 
-        str.Append(":green_square:");
-
-      else if(r == GuessResult.WrongSpot)
-        str.Append(":orange_square:");
-
-      else
-        str.Append(":red_square:");
-    }
-
-    str.Append("\n");
-  }
-
-
-  return str.ToString();
-});
-
-app.AddSlashCommand("rotate", "Set new word of the day", (WordGame game, ApplicationCommandContext ctx) => {
-  game.SelectNewWord();
-  return "New word :o";
-});
+await app.MapWordGameCommandsAsync();
 
 await app.RunAsync();

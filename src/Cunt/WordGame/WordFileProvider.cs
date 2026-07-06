@@ -1,6 +1,7 @@
-using Cunt.Interfaces;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
-namespace Cunt.Services;
+namespace Cunt.WordGame;
 
 class WordFileProvider(IConfiguration conf, ILogger<WordFileProvider> logger) : IWordProvider {
 
@@ -17,6 +18,4 @@ class WordFileProvider(IConfiguration conf, ILogger<WordFileProvider> logger) : 
       throw;
     }
   }
-  
-
 }

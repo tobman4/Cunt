@@ -1,21 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
-using Cunt.Interfaces;
+using Microsoft.Extensions.Logging;
 
-namespace Cunt.Services;
+namespace Cunt.WordGame;
 
-enum GuessResult {
-  Wrong,
-  Correct,
-  WrongSpot
-}
-
-class GameContext(ulong user) {
-  public readonly ulong UserID = user;
-
-  public readonly List<GuessResult[]> GuessLog = new();
-}
-
-class WordGame(IServiceProvider services, ILogger<WordGame> logger) {
+public class WordGame(IServiceProvider services, ILogger<WordGame> logger) {
 
   private static readonly Random _rng = new();
   private static string _secretWord = "Braum";
@@ -78,8 +66,6 @@ class WordGame(IServiceProvider services, ILogger<WordGame> logger) {
       _logger.LogDebug("Word found by {userID}", userID);
       _activeGames.Remove(userID);
     }
-      
-
 
     return game;
   }
