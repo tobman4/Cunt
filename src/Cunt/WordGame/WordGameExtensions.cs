@@ -9,18 +9,23 @@ namespace Cunt.WordGame;
 
 public static class WordGameExtensions {
   public static IServiceCollection AddWordGame(this IServiceCollection services) {
-    services.AddScoped<WordGame>();
-    services.AddScoped<IWordProvider, WordFileProvider>();
+    services.AddSingleton<IWordProvider, WordFileProvider>();
+    services.AddSingleton<WordGame>();
     return services;
   }
 
   public static async Task<IHost> MapWordGameCommandsAsync(this IHost host) {
     var featureManager = host.Services.GetRequiredService<IFeatureManager>();
-    
+
     if (await featureManager.IsEnabledAsync(Cunt.FeatureFlags.WordGameEnabled)) {
       host.AddSlashCommand("guess", "Guess the word of the day", (WordGame game, ApplicationCommandContext ctx, string guess) => {
-        if (guess.Length > 25)
-          return "Bad guess: To long";
+        if (string.IsNullOrWhiteSpace(guess)) {
+          return "Bad guess: Guess cannot be empty";
+        }
+
+        if (guess.Length > 25) {
+          return "Bad guess: Too long";
+        }
 
         GameContext result;
         try {
@@ -32,25 +37,31 @@ public static class WordGameExtensions {
         var str = new StringBuilder();
         foreach (var round in result.GuessLog) {
           foreach (var r in round) {
-            if (r == GuessResult.Correct) 
+            if (r == GuessResult.Correct) {
               str.Append(":green_square:");
-            else if (r == GuessResult.WrongSpot)
+            } else if (r == GuessResult.WrongSpot) {
               str.Append(":orange_square:");
-            else
+            } else {
               str.Append(":red_square:");
+            }
           }
-          str.Append("\n");
+          str.Append('\n');
         }
 
-        return str.ToString();
+        return str.ToString().TrimEnd('\n');
       });
 
       host.AddSlashCommand("rotate", "Set new word of the day", (WordGame game, ApplicationCommandContext ctx) => {
-        game.SelectNewWord();
-        return "New word :o";
+        try {
+          game.SelectNewWord();
+          return "New word selected :o";
+        } catch (Exception ex) {
+          return $"Failed to rotate word: {ex.Message}";
+        }
       });
     }
 
     return host;
   }
 }
+

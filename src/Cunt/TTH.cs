@@ -3,34 +3,40 @@ using NetCord.Gateway;
 
 namespace Cunt;
 
-class TTH(
+public class TTH(
   ILogger<TTH> logger,
-  IServiceProvider services,
+  IConfiguration conf,
   WikipediaClient client,
   GatewayClient disc
 ) : BackgroundService {
 
-  private readonly ILogger _logger = logger;
-  private readonly IServiceProvider _services = services;
-  private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(60));
+  private readonly ILogger<TTH> _logger = logger;
   private readonly WikipediaClient _client = client;
   private readonly GatewayClient _discord = disc;
-
-
-  private DateTime _lastSend = DateTime.MinValue;
-  private TimeSpan _timeToWait = TimeSpan.FromHours(1);
+  private readonly PeriodicTimer _timer = new(TimeSpan.FromHours(1));
 
   protected override async Task ExecuteAsync(CancellationToken ct) {
-     
-    do{ 
-      if(DateTime.UtcNow - _lastSend < _timeToWait) 
-        continue;
-      
-      var todaysEvent = await _client.GetTodaysEvent();
-      _logger.LogInformation("On this day in {year}: {event}", todaysEvent.Year, todaysEvent.Title);
-      _lastSend = DateTime.UtcNow;
-      
-      await _discord.SendMessageAsync(0, 727421717252800562, $"On this day in {todaysEvent.Year}: {todaysEvent.Title}");
-    }while(await _timer.WaitForNextTickAsync(ct));
+    var channelIdStr = conf["TTH:ChannelID"];
+    if (!ulong.TryParse(channelIdStr, out var channelId)) {
+      _logger.LogWarning("TTH:ChannelID is not configured or invalid. TTH background service will not post messages.");
+      return;
+    }
+
+    do {
+      try {
+        var todaysEvent = await _client.GetTodaysEvent(ct);
+        _logger.LogInformation("On this day in {year}: {event}", todaysEvent.Year, todaysEvent.Title);
+        await _discord.SendMessageAsync(channelId, $"On this day in {todaysEvent.Year}: {todaysEvent.Title}");
+      } catch (Exception ex) when (ex is not OperationCanceledException) {
+        _logger.LogError(ex, "Failed to retrieve or send today's Wikipedia event.");
+      }
+    } while (await _timer.WaitForNextTickAsync(ct));
+  }
+
+  public override void Dispose() {
+    _timer.Dispose();
+    base.Dispose();
+    GC.SuppressFinalize(this);
   }
 }
+
